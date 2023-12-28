@@ -1,0 +1,58 @@
+#
+# Redirect all www to non-www
+#
+server {
+    server_name          www.plugtion.com;
+    ssl_certificate /etc/letsencrypt/live/www.plugtion.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.plugtion.com/privkey.pem; # managed by Certbot
+    listen               443 ssl;
+    return 301 https://plugtion.com$request_uri;
+}
+
+server {
+  server_name plugtion.com  www.plugtion.com;
+
+  location / {
+    proxy_pass http://localhost:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+  location /api {
+    proxy_pass http://localhost:3333;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+    underscores_in_headers on;
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.plugtion.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.plugtion.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+   
+
+
+}
+server {
+
+    if ($host = plugtion.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    if ($host = www.plugtion.com) {
+        
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+  server_name plugtion.com www.plugtion.com;
+    listen 80;
+    return 404; # managed by Certbot
+
+}
